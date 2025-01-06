@@ -7,38 +7,29 @@ from fastapi.params import Body
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 
-
-class Post(BaseModel):
-    title: str
-    content: str
-    # published: Optional[bool] = True, tried to supply a null value
-    # Python lets you write optional type hints 
-    # where you can return either a specified type or None
-    # to a column with not null constraint but with Default constraint
-    # got an error, Explaination (stackoverflow):
-    # DEFAULT is used if no value is passed and only on INSERT. 
-    # NULL is a value, an unknown one but a value, 
-    # so DEFAULT is not invoked and you trip the NOT NULL constraint. 
-    # To get this to work just don't supply a value for the field.
-    # conclusion: default is implicit
-    published: bool = True
-
+# '.' represent './' for relative imports
+from . import model
+# use them with out of library module otherwise import will fail
+from .database import SessionDep, create_db_and_tables, engine
 
 app = FastAPI()
 
-while True:
-    try:
-        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', 
-                                password='admin123', cursor_factory=RealDictCursor)    
-        cursor = conn.cursor()
-        print('database connection was successfull!')
-        break
-    except Exception as error:
-        print('Error: ', error)
-        time.sleep(5)
+# model.SQLModel.metadata.create_all(bind=engine)
+create_db_and_tables()
+
+# while True:
+#     try:
+#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', 
+#                                 password='admin123', cursor_factory=RealDictCursor)    
+#         cursor = conn.cursor()
+#         print('database connection was successfull!')
+#         break
+#     except Exception as error:
+#         print('Error: ', error)
+#         time.sleep(5)
 
 @app.get("/")
-async def root():
+async def root(schema: model.Post, session: SessionDep):
     return {'message': 'Hello World'}
 
 @app.get("/posts")
@@ -58,7 +49,7 @@ async def get_post(id: int):
     return {"fetched post": post}
 
 @app.post("/add_post", status_code=status.HTTP_201_CREATED)
-async def add_post(add: Post = Body(...)):
+async def add_post(add: model.Post = Body(...)):
     # Run the query
     cursor.execute("""INSERT INTO posts (title, content, published) 
                    VALUES (%s, %s, %s) RETURNING *""", 
@@ -82,7 +73,7 @@ async def delete_post(id: int):
     
 
 @app.put("/edit_post/{id}")
-async def edit_post(id: int, update: Post = Body(...)):
+async def edit_post(id: int, update: model.Post = Body(...)):
     cursor.execute("""UPDATE posts SET 
                    title = %s, content = %s, published = %s
                    WHERE id = %s RETURNING *""",
