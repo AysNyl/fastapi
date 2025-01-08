@@ -10,32 +10,22 @@ from pydantic import BaseModel
 # '.' represent './' for relative imports
 from . import model
 # use them with out of library module otherwise import will fail
-from .database import SessionDep, create_db_and_tables, engine
+from .database import SessionDep, create_db_and_tables, select
 
 app = FastAPI()
 
 # model.SQLModel.metadata.create_all(bind=engine)
 create_db_and_tables()
 
-# while True:
-#     try:
-#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', 
-#                                 password='admin123', cursor_factory=RealDictCursor)    
-#         cursor = conn.cursor()
-#         print('database connection was successfull!')
-#         break
-#     except Exception as error:
-#         print('Error: ', error)
-#         time.sleep(5)
 
+"""https://fastapi.tiangolo.com/tutorial/dependencies/#dependencies"""
 @app.get("/")
 async def root(schema: model.Post, session: SessionDep):
-    return {'message': 'Hello World'}
+    return {'status': 'success'}
 
 @app.get("/posts")
-async def get_posts():
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
+async def get_posts(session: SessionDep):
+    posts = session.exec(select(model.Post)).all()
     print(posts)
     return {"all posts": posts}
 
