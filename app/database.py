@@ -7,7 +7,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 @<ip-address/hostname>/<database_name>"""
 SQLModel_DATABASE_URL = "postgresql://postgres:admin123@localhost/fastapi"
 
-engine = create_engine(SQLModel_DATABASE_URL)
+engine = create_engine(SQLModel_DATABASE_URL, echo=True)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
