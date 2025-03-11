@@ -2,6 +2,7 @@ from typing import ClassVar
 from .database import SQLModel, Field
 from sqlmodel import Integer, String, Boolean, TIMESTAMP, Column, text
 import datetime
+from pydantic import BaseModel, EmailStr
 
 class Post(SQLModel, table=True):
     __tablename__ = "posts1"
@@ -20,3 +21,17 @@ class Post(SQLModel, table=True):
     content: str = Field(sa_column=Column(String, nullable=False))
     published: bool = Field(sa_column=Column(Boolean, nullable=False, server_default="true"))
     createad_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
+
+class RePost(BaseModel):
+    pass
+
+class ReUser(SQLModel):
+    email: EmailStr
+    created_at: datetime.datetime
+
+class User(SQLModel, table=True):
+    __tablename__ = "users"
+    id: int = Field(sa_column=Column(Integer, primary_key=True, nullable=False, index=True))
+    email: EmailStr = Field(sa_column=Column(String, nullable=False, unique=True))
+    password: str = Field(sa_column=Column(String, nullable=False))
+    created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))

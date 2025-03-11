@@ -7,6 +7,8 @@ from fastapi.params import Body
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 
+from . import schemas
+
 
 class Post(BaseModel):
     title: str
@@ -58,7 +60,7 @@ async def get_post(id: int):
     return {"fetched post": post}
 
 @app.post("/add_post", status_code=status.HTTP_201_CREATED)
-async def add_post(add: Post = Body(...)):
+async def add_post(add: schemas.PostCreate = Body(...)):
     # Run the query
     cursor.execute("""INSERT INTO posts (title, content, published) 
                    VALUES (%s, %s, %s) RETURNING *""", 

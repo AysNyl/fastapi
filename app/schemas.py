@@ -15,4 +15,7 @@ class BasePost(BaseModel):
     # conclusion: default is implicit
     published: bool = True
 
+class PostCreate(BasePost):
+    pass
+
 

@@ -8,7 +8,7 @@ from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 
 # '.' represent './' for relative imports
-from .model import Post
+from .model import Post, User, RePost, ReUser
 # use them with out of library module otherwise import will fail
 from .database import SessionDep, create_db_and_tables, select
 
@@ -66,7 +66,6 @@ async def delete_post(id: int, session: SessionDep):
     session.delete(deleted_post)
     session.commit()
     return {"deleted post": deleted_post}
-    
 
 @app.put("/edit_post/{id}")
 async def edit_post(id: int, session: SessionDep, update: Post = Body(...)):
@@ -88,3 +87,12 @@ async def edit_post(id: int, session: SessionDep, update: Post = Body(...)):
     session.commit()
     session.refresh(update_post)
     return {"updated post": update_post}
+
+@app.post("/register", status_code=status.HTTP_201_CREATED, response_model=ReUser)
+def register(user: User, session: SessionDep):
+    new_user = User(**user.model_dump())
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+    print(new_user)
+    return {"user registered": new_user}
