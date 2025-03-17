@@ -53,4 +53,4 @@ class Token(SQLModel):
     
 
 class TokenData(SQLModel):
-    id: Optional[str] = None
+    id: Optional[int] = None

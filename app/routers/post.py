@@ -1,7 +1,9 @@
-from typing import List
+from typing import Annotated, List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.params import Body
+
+from app.utils import get_current_user
 
 # '.' represent './' for relative imports
 from ..database import SessionDep, select
@@ -27,7 +29,8 @@ async def get_post(session: SessionDep, id: int):
     return {"fetched post": post}
 
 @router.post("/add_post", status_code=status.HTTP_201_CREATED)
-async def add_post(session: SessionDep, schema: Post = Body(...)):
+async def add_post(session: SessionDep,  user_id: Annotated[int, Depends(get_current_user)], schema: Post = Body(...)):
+    print(user_id)
     new_post = Post(title=schema.title,
                     content=schema.content,
                     published=schema.published)
