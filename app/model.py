@@ -1,3 +1,4 @@
+from git import Optional
 from numpy import integer
 from pydantic import EmailStr
 from sqlalchemy import true
@@ -50,3 +51,6 @@ class Token(SQLModel):
     access_token: str
     token_type: str
     
+
+class TokenData(SQLModel):
+    id: Optional[str] = None
