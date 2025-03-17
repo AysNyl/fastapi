@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Optional, Any
 
 import psycopg2
 from fastapi import FastAPI, HTTPException, Response, status
@@ -89,10 +89,10 @@ async def edit_post(id: int, session: SessionDep, update: Post = Body(...)):
     return {"updated post": update_post}
 
 @app.post("/register", status_code=status.HTTP_201_CREATED, response_model=ReUser)
-def register(user: User, session: SessionDep):
+def register(user: User, session: SessionDep) -> Any:
     new_user = User(**user.model_dump())
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
     print(new_user)
-    return {"user registered": new_user}
+    return new_user
