@@ -31,5 +31,5 @@ async def get_user(id: int, session: SessionDep):
     if not get_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="user id {} not found".format(id))
-    return get_user     
+    return get_user
     

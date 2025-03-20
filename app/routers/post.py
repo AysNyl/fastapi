@@ -21,7 +21,7 @@ async def get_posts(session: SessionDep):
     return posts
 
 @router.get("/post/{id}")
-async def get_post(session: SessionDep, id: int):
+async def get_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int):
     post = session.exec(select(Post).where(Post.id == id)).one()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
@@ -29,7 +29,7 @@ async def get_post(session: SessionDep, id: int):
     return {"fetched post": post}
 
 @router.post("/add_post", status_code=status.HTTP_201_CREATED)
-async def add_post(session: SessionDep,  user_id: Annotated[int, Depends(get_current_user)], schema: Post = Body(...)):
+async def add_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], schema: Post = Body(...)):
     print(user_id)
     new_post = Post(title=schema.title,
                     content=schema.content,
@@ -41,7 +41,8 @@ async def add_post(session: SessionDep,  user_id: Annotated[int, Depends(get_cur
     return {"added post": new_post}
 
 @router.delete("/delete_post/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(session: SessionDep, id: int):
+async def delete_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int):
+    print(user_id)
     delete_post = session.exec(select(Post).where(Post.id == id)).first()
     if not delete_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -52,7 +53,8 @@ async def delete_post(session: SessionDep, id: int):
     
 
 @router.put("/edit_post/{id}")
-async def edit_post(session: SessionDep, id: int, update: Post = Body(...)):
+async def edit_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int, update: Post = Body(...)):
+    print(user_id)
     updated_post = session.exec(select(Post).where(Post.id == id)).first()
     if not updated_post:
         HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
