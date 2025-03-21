@@ -7,16 +7,16 @@ from app.utils import get_current_user
 
 # '.' represent './' for relative imports
 from ..database import SessionDep, select
-from ..model import Post
+from ..model import Post, RePost
 
 
 router = APIRouter(
     tags = ['Posts']
 )
 
-@router.get("/posts", response_model = List[Post])
-async def get_posts(session: SessionDep):
-    posts = session.exec(select(Post)).all()
+@router.get("/posts", response_model = List[RePost])
+async def get_posts(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)]):
+    posts = session.exec(select(Post).filter(Post.user_id == user_id)).all()
     print(posts)
     return posts
 
@@ -31,7 +31,8 @@ async def get_post(session: SessionDep, user_id: Annotated[int, Depends(get_curr
 @router.post("/add_post", status_code=status.HTTP_201_CREATED)
 async def add_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], schema: Post = Body(...)):
     print(user_id)
-    new_post = Post(title=schema.title,
+    new_post = Post(user_id=user_id,
+                    title=schema.title,
                     content=schema.content,
                     published=schema.published)
     session.add(new_post)
