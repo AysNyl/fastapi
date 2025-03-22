@@ -6,7 +6,7 @@ from fastapi.params import Body
 from app.utils import get_current_user
 
 # '.' represent './' for relative imports
-from ..database import SessionDep, select
+from ..database import SessionDep, select, and_, or_
 from ..model import Post, RePost
 
 
@@ -44,7 +44,7 @@ async def add_post(session: SessionDep, user_id: Annotated[int, Depends(get_curr
 @router.delete("/delete_post/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int):
     print(user_id)
-    delete_post = session.exec(select(Post).where(Post.id == id)).first()
+    delete_post = session.exec(select(Post).where(Post.id == id, Post.user_id == user_id)).first()
     if not delete_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="post not found")
@@ -56,7 +56,8 @@ async def delete_post(session: SessionDep, user_id: Annotated[int, Depends(get_c
 @router.put("/edit_post/{id}")
 async def edit_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int, update: Post = Body(...)):
     print(user_id)
-    updated_post = session.exec(select(Post).where(Post.id == id)).first()
+    updated_post = session.exec(select(Post).where(and_(Post.id == id, Post.user_id == user_id))).first()
+    print("**********************************************************************************")
     if not updated_post:
         HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                       detail="post with id {} does not exist".format(id))

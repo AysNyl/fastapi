@@ -32,12 +32,13 @@ class Post(SQLModel, table=True):
     # created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
 
     id: int = Field(primary_key=True, nullable=False, index=True)
-    user_id: int = Field(nullable=False, foreign_key="users.id")
+    user_id: int = Field(nullable=False, foreign_key="users.id", ondelete="CASCADE")
     title: str = Field(nullable=False)
     content: str = Field(nullable=False)
     published: bool = Field(True, nullable=False)
     # created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
-    created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
+    created_at: datetime.datetime = Field(sa_column=
+                                          Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
 
 
 class RePost(SQLModel):

@@ -1,7 +1,7 @@
 from typing import Annotated    
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, and_, create_engine, select, or_, and_
 
 """postgresql://<username>:<password>
 @<ip-address/hostname>/<database_name>"""
