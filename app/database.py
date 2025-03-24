@@ -2,10 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Session, SQLModel, and_, create_engine, select, or_, and_
+from .config import setting
 
 """postgresql://<username>:<password>
 @<ip-address/hostname>/<database_name>"""
-SQLModel_DATABASE_URL = "postgresql://postgres:admin123@localhost/fastapi"
+# "postgresql://postgres:admin123@localhost/fastapi"
+SQLModel_DATABASE_URL = f"postgresql://{setting['database_username']}:{setting['database_password']}@{setting['database_hostname']}:{setting['database_port']}/{setting['database_name']}"
 
 engine = create_engine(SQLModel_DATABASE_URL, echo=True)
 

@@ -2,6 +2,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.params import Body
+from sqlmodel import col
 
 from app.utils import get_current_user
 
@@ -15,18 +16,18 @@ router = APIRouter(
 )
 
 @router.get("/posts", response_model = List[RePost])
-async def get_posts(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)]):
-    posts = session.exec(select(Post).filter(Post.user_id == user_id)).all()
+async def get_posts(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], limit: int = 5, search: str = ""):
+    posts = session.exec(select(Post).filter(Post.user_id == user_id).where(col(Post.title).contains(search)).limit(limit=limit)).all()
     print(posts)
     return posts
 
-@router.get("/post/{id}", response_model = RePost)
+@router.get("/post/{id}")
 async def get_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int):
     post = session.exec(select(Post).where(Post.id == id)).one()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="post with id {} does not exist".format(id))
-    return post
+    return {"fetched post": post}
 
 @router.post("/add_post", status_code=status.HTTP_201_CREATED)
 async def add_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], schema: Post = Body(...)):
@@ -56,11 +57,11 @@ async def delete_post(session: SessionDep, user_id: Annotated[int, Depends(get_c
 @router.put("/edit_post/{id}")
 async def edit_post(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], id: int, update: Post = Body(...)):
     print(user_id)
-    updated_post = session.exec(select(Post).where(and_(Post.id == id, Post.user_id == user_id))).first()
+    updated_post = session.exec(select(Post).where(and_(Post.user_id == user_id, Post.id == id))).first()
+    print("**********************************************************************************", updated_post)
     if not updated_post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+        HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                       detail="post with id {} does not exist".format(id))
-    print(type(updated_post))
     session.add(updated_post)
     session.commit()
     session.refresh(updated_post)
