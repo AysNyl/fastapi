@@ -4,11 +4,20 @@ import pytz
 from git import Optional
 from numpy import True_, integer
 from pydantic import EmailStr
-from sqlmodel import TIMESTAMP, Boolean, Column, Integer, String, text
+from sqlmodel import TIMESTAMP, Boolean, Column, Integer, Relationship, String, text
 from tomlkit import table
 from voluptuous import Email
 
 from .database import Field, SQLModel
+
+
+class User(SQLModel, table=True):
+    __tablename__ = "users"
+    id: int = Field(sa_column=Column(Integer, primary_key=True, nullable=False, index=True))
+    email: EmailStr = Field(sa_column=Column(String, nullable=False))
+    password: str = Field(sa_column=Column(String, nullable=False))
+    created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
+    posts: list["Post"] | None = Relationship(back_populates="user")
 
 
 class Post(SQLModel, table=True):
@@ -39,22 +48,7 @@ class Post(SQLModel, table=True):
     # created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
     created_at: datetime.datetime = Field(sa_column=
                                           Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
-
-
-class RePost(SQLModel):
-    user_id: int
-    title: str
-    content: str
-    published: bool
-    created_at: datetime.datetime
-
-datetime.timezone.utc
-class User(SQLModel, table=True):
-    __tablename__ = "users"
-    id: int = Field(sa_column=Column(Integer, primary_key=True, nullable=False, index=True))
-    email: EmailStr = Field(sa_column=Column(String, nullable=False))
-    password: str = Field(sa_column=Column(String, nullable=False))
-    created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
+    user: User | None = Relationship(back_populates="posts")
 
 
 class ReUser(SQLModel):
@@ -66,6 +60,14 @@ class ReUser(SQLModel):
 class UserLogin(SQLModel):
     email: EmailStr
     password: str
+
+
+class RePost(SQLModel):
+    user_id: int
+    title: str
+    content: str
+    published: bool
+    created_at: datetime.datetime
 
 
 class Token(SQLModel):
