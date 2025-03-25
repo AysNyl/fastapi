@@ -4,6 +4,7 @@ import pytz
 from git import Optional
 from numpy import True_, integer
 from pydantic import EmailStr
+from sqlalchemy import true
 from sqlmodel import TIMESTAMP, Boolean, Column, Integer, Relationship, String, text
 from tomlkit import table
 from voluptuous import Email
@@ -49,6 +50,17 @@ class Post(SQLModel, table=True):
     created_at: datetime.datetime = Field(sa_column=
                                           Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
     user: User | None = Relationship(back_populates="posts")
+
+
+class Vote(SQLModel, table=True):
+    __tablename__ = "votes"
+    user_id: int = Field(nullable=False, foreign_key="users.id", ondelete="CASCADE", primary_key=True)
+    post_id: int = Field(nullable=False, foreign_key="posts1.id", ondelete="CASCADE", primary_key=True)
+
+
+class VoteIn(SQLModel):
+    post_id: int
+    check: bool = False
 
 
 class ReUser(SQLModel):

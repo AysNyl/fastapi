@@ -2,13 +2,13 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.params import Body
-from sqlmodel import col
+from sqlmodel import col, func
 
 from app.utils import get_current_user
 
 # '.' represent './' for relative imports
 from ..database import SessionDep, select, and_, or_
-from ..model import Post, RePost
+from ..model import Post, RePost, Vote
 
 
 router = APIRouter(
@@ -18,6 +18,7 @@ router = APIRouter(
 @router.get("/posts", response_model = List[RePost])
 async def get_posts(session: SessionDep, user_id: Annotated[int, Depends(get_current_user)], limit: int = 5, search: str = ""):
     posts = session.exec(select(Post).filter(Post.user_id == user_id).where(col(Post.title).contains(search)).limit(limit=limit)).all()
+    # posts = session.exec(select(Post, func.count(Vote.user_id)).join(Vote, Post.id == Vote.post_id, isouter=True))
     print(posts)
     return posts
 
