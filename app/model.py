@@ -1,4 +1,5 @@
 import datetime
+from turtle import back
 
 import pytz
 from git import Optional
@@ -66,7 +67,8 @@ class VoteIn(SQLModel):
 class ReUser(SQLModel):
     email: EmailStr
     registered: bool = True
-    created_at: datetime.datetime = Field(sa_column=Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")))
+    created_at: datetime.datetime
+    # posts = list["RePost"] = Relationship(back_populates="user")
 
 
 class UserLogin(SQLModel):
@@ -80,6 +82,13 @@ class RePost(SQLModel):
     content: str
     published: bool
     created_at: datetime.datetime
+    # user: ReUser = Relationship(back_populates="posts")
+    # votes: int
+
+
+class PostOut(SQLModel):
+    Post: RePost
+    votes: int
 
 
 class Token(SQLModel):
